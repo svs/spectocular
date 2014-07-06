@@ -1,0 +1,27 @@
+html ng-app="liveMetricsApp"
+  head
+    script src="http://localhost:9292/faye/client.js" type="text/javascript"
+    script src="prism.js" type="text/javascript"
+    script src="lodash.min.js" type="text/javascript"
+    script src="angular.js" type="text/javascript"
+    script src="app.js" type="text/javascript"
+    link rel="stylesheet" href="css/style.css" type="text/css"
+    link rel="stylesheet" href="css/prism.css"
+  body ng-controller="MetricsCtrl"
+    script type="text/ng-template" id="example_renderer.html"
+    pre ng-bind="tests"
+      | foo
+    .example_group ng-repeat="(group, examples) in tests"
+      | {{ group }}
+      ul
+        li ng-repeat="test in examples"
+          a ng-class="test.status"
+            | {{ test.description }}
+
+
+    div.file ng-repeat="(filename, file) in loaded_files"
+      | {{filename}}
+      | {{line_highlights[filename]}}
+      pre.line-numbers prism="" data-line="{{line_highlights[filename].join(',')}}"
+        code
+          | {{file}}

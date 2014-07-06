@@ -1,0 +1,14 @@
+body {
+  font-family: Monaco;
+  font-size: 12px;
+}
+a.failed {
+  color: red;
+}
+a.passed {
+  color: green;
+}
+
+div.file {
+    width: 70%;
+}
