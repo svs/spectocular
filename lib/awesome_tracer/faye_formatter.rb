@@ -1,4 +1,5 @@
 require 'rspec/core/formatters/progress_formatter'
+require 'net/http'
 require 'faye'
 require 'set'
 class Trace
@@ -85,11 +86,13 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
   # }
 
   def example_group_started(eg)
-    publish('/example_group_started', {event: "example_group_started", name: eg.display_name, parents: eg.parent_groups.reverse[0..-2].map(&:description), file_path: eg.file_path})
+    ap eg.methods
+    publish('/example_group_started', {event: "example_group_started", name: eg.display, parents: eg.parent_groups.reverse[0..-2].map(&:description), file_path: eg.file_path})
   end
 
 
   def example_started(e)
+    ap 'example_started'
     Trace.set_location(e.location)
   end
 
@@ -106,12 +109,22 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
 
   private
 
-  def publish(channel, message)
-    EM.run do
-      ap [channel, message]
-      c = Faye::Client.new('http://localhost:9292/faye')
-      p = c.publish(channel, message)
-      p.callback { EM.stop_event_loop }
+  def publish(channel, message, transport = 'http')
+    ap "publishing to #{channel} via #{transport}"
+    if transport == 'http'
+      message = {:channel => channel, :data => message}
+      uri = URI.parse("http://localhost:9292/faye")
+      Net::HTTP.post_form(uri, :message => message.to_json)
+    else
+      EM.run do
+        ap [channel, message]
+        c = Faye::Client.new('http://localhost:9292/faye')
+        pbl = c.publish(channel, message)
+        ap pbl
+        pry.byebug
+        p.callback { EM.stop_event_loop }
+        p.errback {|error| ap error}
+      end
     end
   end
 
@@ -127,7 +140,7 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
       status: example.metadata[:execution_result][:status],
       trace: Trace.traces(example.location),
       files: Trace.files(example.location),
-      example_group: example.example_group.display_name
+      example_group: example.example_group.display
     }
 
   end

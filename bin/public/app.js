@@ -73,6 +73,9 @@ liveMetricsApp.controller('MetricsCtrl', function($scope, $http, Faye) {
     });
   });
 
+
+
+
   Faye.subscribe('/example_group_started', function(message) {
     $scope.$apply(function() {
       console.log(message);

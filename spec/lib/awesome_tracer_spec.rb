@@ -45,10 +45,11 @@ describe AwesomeTracer do
   describe "trace" do
     before(:each) { Foo.new("foo").bar }
     subject { AwesomeTracer }
-
-    its(:files) { should == ["/Users/svs/src/awesome_tracer/spec/lib/awesome_tracer_spec.rb"] }
-    its(:max_level) { should == 2 }
-    specify { subject.trace.count.should == 14 }
+    it "should have files" do
+      expect (AwesomeTracer.files).to_eq(["/Users/svs/src/awesome_tracer/spec/lib/awesome_tracer_spec.rb"])
+    end
+    #its(:max_level) { should == 2 }
+    #specify { subject.trace.count.should == 14 }
   end
 
 
