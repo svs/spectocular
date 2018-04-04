@@ -57,7 +57,7 @@ class AwesomeTracer
 
   def self.stop!
     @@tp.disable
-  end
+    end
 
   def self.running?
     @@tp && @@tp.enabled?

@@ -4,8 +4,13 @@ require 'faye'
 require_relative './trace.rb'
 
 
-class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
+class Fay3Formatter
   # Watches RSpec output and sends it as nicely formatted JSON to Faye server
+  RSpec::Core::Formatters.register self, :example_group_started, :example_started, :example_passed, :example_failed, :example_pending
+
+  def initialize output
+    @output = output
+  end
 
   @@tp_call = TracePoint.new(:call) do |tp|
     if tp.path.to_s =~ /foo/
@@ -45,23 +50,25 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
   #   end
   # }
 
-  def example_group_started(eg)
+  def example_group_started(n)
+    eg = n.group
     publish('/example_group_started', {event: "example_group_started", name: eg.description, parents: eg.parent_groups.reverse[0..-2].map(&:description), file_path: eg.file_path})
   end
 
 
-  def example_started(e)
+  def example_started(n)
     ap 'example_started'
+    e = n.example
     Trace.set_location(e.location)
   end
 
-  def example_passed(example)
-    super(example)
+  def example_passed(n)
+    example = n.example
     publish('/example_finished', as_json(example).merge("event" => "example_passed"))
   end
 
-  def example_failed(example)
-    super(example)
+  def example_failed(n)
+    example = n.example
     publish('/example_finished', as_json(example).merge("event" => "example_failed"))
   end
 
@@ -70,14 +77,12 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
 
   def publish(channel, message, transport = 'http')
     ap "publishing to #{channel} via #{transport}"
-    ap message
     if transport == 'http'
       message = {:channel => channel, :data => message}
       uri = URI.parse("http://localhost:9292/faye")
       Net::HTTP.post_form(uri, :message => message.to_json)
     else
       EM.run do
-        ap [channel, message]
         c = Faye::Client.new('http://localhost:9292/faye')
         pbl = c.publish(channel, message)
         pry.byebug
@@ -96,7 +101,7 @@ class FayeFormatter < RSpec::Core::Formatters::ProgressFormatter
       parents: example.example_group.parent_groups.reverse.map(&:description),
       exception: example.exception,
       execution_result: example.execution_result,
-      status: example.metadata[:execution_result][:status],
+      status: example.metadata[:execution_result].status,
       trace: Trace.traces(example.location),
       files: Trace.files(example.location),
       example_group: example.example_group.display

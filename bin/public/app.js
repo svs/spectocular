@@ -37,27 +37,17 @@ liveMetricsApp.factory('Faye', function() {
 
 
 liveMetricsApp.controller('MetricsCtrl', function($scope, $http, Faye) {
-  $scope.tests = {_children: [], _stats:{}, _tests: [] };
+    $scope.tests = {_children: [], _stats:{}, _tests: [] };
+    $scope.runs = {};
   $scope.loaded_files = {};
   $scope.line_highlights = {};
   Faye.subscribe('/example_finished', function(message) {
     console.log(message);
-    $scope.$apply(function() {
+      $scope.$apply(function() {
+	  var o = {};
+	  o[message.description] = message.status;
+	  _.set($scope.runs, message.parents.join("."), o);
       var a = $scope.tests;
-
-      // go through the parents list and create a place in the tree
-      // for each example group, children, etc.
-      _.each(message.parents, function(n, i) {
-	console.log(n,i);
-	if (_.isUndefined(a)) { a = {_children: [], _stats: {}, _tests: []}; };
-	if (i == message.parents.length - 1) {
-	  a['_tests'].push(message.execution_result);
-	}
-	a = a['_children'];
-      });
-      console.log($scope.tests);
-
-
       angular.forEach(message.trace, function(t) {
 	if (_.isEmpty($scope.line_highlights[t.path])) {
 	  $scope.line_highlights[t.path] = [];
@@ -76,15 +66,19 @@ liveMetricsApp.controller('MetricsCtrl', function($scope, $http, Faye) {
 
 
 
-  Faye.subscribe('/example_group_started', function(message) {
-    $scope.$apply(function() {
-      console.log(message);
-      if (!_.isEmpty(message.parents)) {
-	var st = "$scope.tests['" + message.parents.join("']['") + "'] = []";
-	console.log(st);
-      }
+    Faye.subscribe('/example_group_started', function(message) {
+	console.log(["example group started", message]);
+	$scope.$apply(function() {
+	    console.log("runs",$scope.runs);
+	    var p = [];
+	    if (!_.isEmpty(message.parents)) {
+		p.push(message.parents);
+	    }
+	    p.push(message.name);
+	    _.set($scope.runs, p.join("."), {});
+	    console.log("runs",$scope.runs);
+	});
     });
-  });
 
   Faye.subscribe('/lm-ctrl', function(message) {
     $scope.$apply(function() {

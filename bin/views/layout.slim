@@ -9,10 +9,8 @@ html ng-app="liveMetricsApp"
     link rel="stylesheet" href="css/prism.css"
   body ng-controller="MetricsCtrl"
     script type="text/ng-template" id="example_renderer.html"
-    pre ng-bind="tests"
-      | foo
+    | {{ runs }}
     .example_group ng-repeat="(group, examples) in tests"
-      | {{ group }}
       ul
         li ng-repeat="test in examples"
           a ng-class="test.status"
@@ -21,7 +19,8 @@ html ng-app="liveMetricsApp"
 
     div.file ng-repeat="(filename, file) in loaded_files"
       | {{filename}}
+      br
       | {{line_highlights[filename]}}
-      pre.line-numbers prism="" data-line="{{line_highlights[filename].join(',')}}"
+      pre.line-numbers prism="" data-line="2,3,4"
         code
           | {{file}}
