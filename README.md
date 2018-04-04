@@ -39,4 +39,4 @@ Start Sinatra
 Run some specs
 
 ```
-bundle exec rspec --require rspec/legacy_formatters --require ./lib/awesome_tracer/faye_formatter.rb --format FayeFormatter spec/lib/awesome_tracer_spec.rb```
+bundle exec rspec --require ./lib/awesome_tracer/fay3_formatter.rb --format Fay3Formatter spec/lib/awesome_tracer_spec.rb```
