@@ -28,15 +28,29 @@ To build an amazing guide and helper to help developers of all levels to write t
 
 # Instructions
 
-After `bundle install` etc, start the Faye server
+After cloning the repository, install
+ 
+ `bundle install` 
+ 
+Open 3 tabs / windows in your favourite terminal & perform each step in a different tab/window.
+
+
+**config.ru** & **server.rb** are present the in the bin directory 
+
+Start the Faye server
 ```
- bundle exec rackup config.ru -E production -p 9292 -s thin
+ cd bin && bundle exec rackup config.ru -E production -p 9292 -s thin
  ```
 
 Start Sinatra
-```bundle exec ruby server.rb```
+```
+cd bin && bundle exec ruby server.rb
+```
+
+Visit : http://localhost:4567 in your browser
 
 Run some specs
 
 ```
-bundle exec rspec --require ./lib/awesome_tracer/fay3_formatter.rb --format Fay3Formatter spec/lib/awesome_tracer_spec.rb```
+bundle exec rspec --require ./lib/awesome_tracer/fay3_formatter.rb --format Fay3Formatter spec/lib/awesome_tracer_spec.rb
+```
